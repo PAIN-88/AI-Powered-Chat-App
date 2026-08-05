@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'user/profile.css' %}">
+
+
+    <div class="auth-page">
+        <div class="auth-card profile-card">
+            <div class="auth-stripe"></div>
+
+            <div class="profile-avatar-wrap">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="Avatar" class="profile-avatar">
+                {% else %}
+                    <div class="profile-avatar profile-avatar--empty">
+                        {{ profile.user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <h1 class="auth-title profile-name">{{ profile.user.username }}</h1>
+            <p class="auth-subtitle">{{ profile.user.email }}</p>
+
+            <div class="profile-info">
+                <span class="profile-label">Bio</span>
+                <p class="profile-bio">
+                    {% if profile.bio %}{{ profile.bio }}{% else %}No bio added yet.{% endif %}
+                </p>
+            </div>
+
+            <div class="profile-actions">
+                <a href="{% url 'profile-setting' %}" class="btn-primary">Edit Profile</a>
+                <a href="{% url 'home' %}" class="btn-secondary">Home</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

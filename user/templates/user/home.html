@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!-- ==================== HERO SECTION ==================== -->
+ <link rel="stylesheet" href="{% static 'user/home.css' %}?v=6">
+<section class="hero" id="hero">
+  <div class="hero-container">
+    <div class="hero-left">
+      <h1 class="hero-title">Connect. Chat. Think with AI.</h1>
+      <p class="hero-subtitle">
+        Experience a smarter way to communicate. Instantly connect with your friends through real-time messaging while an integrated AI assistant helps you answer questions, generate ideas, summarize information, and have intelligent conversations. Built using Django, Django Channels, WebSockets, and modern web technologies for a fast, secure, and seamless chatting experience.
+      </p>
+      <div class="typing-container">
+        <span class="typing-text" id="typing-text"></span>
+        <span class="typing-cursor">|</span>
+      </div>
+      <div class="hero-buttons">
+        <a href="#cta" class="btn btn-primary">Start Chatting</a>
+        <a href="#features" class="btn btn-secondary">Learn More</a>
+      </div>
+    </div>
+
+  <div class="hero-right">
+  <img src="{% static 'images/girl-img.jpg' %}" alt="Friends smiling while chatting on phone" class="hero-image">
+
+  <div class="community-float-card">
+    <div class="community-avatars">
+      <img src="{% static 'images/avatar-1.avif' %}" alt="Community member" class="avatar avatar-1">
+      <img src="{% static 'images/avatar-2.avif' %}" alt="Community member" class="avatar avatar-2">
+      <img src="{% static 'images/avatar-3.avif' %}" alt="Community member" class="avatar avatar-3">
+    </div>
+    <span class="community-text">Active community</span>
+  </div>
+</div>
+
+   {% comment %}
+    <div class="hero-right">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      
+      <div class="chat-illustration">
+        <div class="ai-avatar">
+          <div class="avatar-ring"></div>
+          <div class="avatar-face">
+            <span class="avatar-icon">🤖</span>
+          </div>
+        </div>
+
+        <div class="float-bubble bubble-1">
+          <span>Hey! How can I help?</span>
+        </div>
+        <div class="float-bubble bubble-2">
+          <span>Real-time replies ⚡</span>
+        </div>
+        <div class="float-bubble bubble-3">
+          <span>Explain Django Channels</span>
+        </div>
+
+        <div class="glass-card glass-1">
+          <div class="glass-header">
+            <div class="glass-dot"></div>
+            <div class="glass-dot"></div>
+            <div class="glass-dot"></div>
+          </div>
+          <div class="glass-body">
+            <div class="mini-msg user-msg">Hello AI</div>
+            <div class="mini-msg ai-msg">Hello! 👋</div>
+          </div>
+        </div>
+
+        <div class="glass-card glass-2">
+          <div class="status-dot"></div>
+          <span>Online</span>
+        </div>
+      </div>
+
+      <div class="floating-badge badge-1">✓ AI Powered</div>
+      <div class="floating-badge badge-2">⚡ Real-Time Chat</div>
+      <div class="floating-badge badge-3">🔒 Secure</div>
+      <div class="floating-badge badge-4">🤖 Smart Assistant</div>
+    </div>
+  </div> {% endcomment %}
+</section>
+
+<!-- ==================== FEATURES SECTION ==================== -->
+<section class="features" id="features">
+  <div class="section-container">
+    <h2 class="section-title fade-up">Everything You Need in One Place</h2>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/message.jpg' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+        <h3>Real-Time Messaging</h3>
+        <p>Chat instantly with your friends using WebSockets.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/new-ai.jpg' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+       
+        <h3>AI Assistant</h3>
+        <p>Ask questions and receive intelligent AI-powered responses.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/953.jpg' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+        <h3>Private Conversations</h3>
+        <p>Secure one-to-one messaging with protected accounts.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/fast.avif' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+        <h3>Fast Performance</h3>
+        <p>Powered by Django Channels for seamless communication.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/image.png' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+        <h3>Responsive Design</h3>
+        <p>Beautiful experience across desktop, tablet, and mobile.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><img src="{% static 'images/modern.avif' %}" alt="Friends smiling while chatting on phone" class="hero-image"></div>
+        <h3>Modern UI</h3>
+        <p>Minimal Apple-inspired interface with smooth interactions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section class="how-it-works" id="how-it-works">
+  <div class="section-container">
+    <h2 class="section-title fade-up">How It Works</h2>
+    <div class="steps-wrapper">
+      <div class="step-card fade-up">
+        <div class="step-number">1</div>
+        <h3>Login or Create an Account</h3>
+        <p>Sign up in seconds and join the community securely.</p>
+      </div>
+      <div class="step-arrow">
+        <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+          <path d="M0 12H36M36 12L26 2M36 12L26 22" stroke="#4F8CFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="step-card fade-up">
+        <div class="step-number">2</div>
+        <h3>Connect with Friends</h3>
+        <p>Find and connect with friends instantly.</p>
+      </div>
+      <div class="step-arrow">
+        <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+          <path d="M0 12H36M36 12L26 2M36 12L26 22" stroke="#4F8CFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="step-card fade-up">
+        <div class="step-number">3</div>
+        <h3>Start Chatting or Ask AI</h3>
+        <p>Message friends or talk to the AI assistant.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== AI DEMO SECTION ==================== -->
+<section class="ai-demo" id="ai-demo">
+  <div class="section-container">
+    <h2 class="section-title fade-up">See the AI in Action</h2>
+    <div class="demo-window fade-up">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="demo-title">AI Assistant</div>
+        <div class="demo-status">
+          <span class="status-indicator"></span>
+          Online
+        </div>
+      </div>
+      <div class="demo-messages" id="demo-messages">
+        <!-- Messages injected by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== ABOUT SECTION ==================== -->
+<section class="about" id="about">
+  <div class="section-container">
+    <h2 class="section-title fade-up">About This Project</h2>
+    <p class="about-text fade-up">
+      This AI Chat Application combines real-time messaging with the power of artificial intelligence to create a smarter communication experience. Users can instantly connect with friends through secure WebSocket-based conversations while interacting with an integrated AI assistant for answering questions, generating ideas, summarizing content, and improving productivity. Designed with Django, Django Channels, WebSockets, HTML, CSS, and JavaScript, the application focuses on speed, simplicity, security, and an exceptional user experience.
+    </p>
+  </div>
+</section>
+
+<!-- ==================== STATISTICS ==================== -->
+<section class="stats" id="stats">
+  <div class="section-container">
+    <div class="stats-grid">
+      <div class="stat-item fade-up">
+        <div class="stat-number" data-target="500">0</div>
+        <div class="stat-suffix">+</div>
+        <div class="stat-label">Happy Users</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number" data-target="1000">0</div>
+        <div class="stat-suffix">+</div>
+        <div class="stat-label">Messages Delivered</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number" data-target="99.9">0</div>
+        <div class="stat-suffix">%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number" data-target="24">0</div>
+        <div class="stat-suffix">/7</div>
+        <div class="stat-label">AI Availability</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CALL TO ACTION ==================== -->
+<section class="cta" id="cta">
+  <div class="cta-container fade-up">
+    <h2 class="cta-title">Ready to Start Smarter Conversations?</h2>
+    <p class="cta-subtitle">Connect with friends and experience AI-powered real-time communication.</p>
+    <a href="#" class="btn btn-primary btn-large">Start Chatting</a>
+  </div>
+</section>
+
+
+    <script>
+/* ==================== TYPING ANIMATION ==================== */
+(function () {
+  const phrases = [
+    "AI Assistant Ready...",
+    "Connect with Friends...",
+    "Real-Time Messaging...",
+    "Powered by Django Channels...",
+    "Fast. Secure. Intelligent.",
+    "Ask Anything..."
+  ];
+
+  const el = document.getElementById("typing-text");
+  if (!el) return;
+
+  let phraseIndex = 0;
+  let charIndex = 0;
+  let isDeleting = false;
+  let typingSpeed = 80;
+
+  function type() {
+    const current = phrases[phraseIndex];
+
+    if (isDeleting) {
+      el.textContent = current.substring(0, charIndex - 1);
+      charIndex--;
+      typingSpeed = 40;
+    } else {
+      el.textContent = current.substring(0, charIndex + 1);
+      charIndex++;
+      typingSpeed = 80;
+    }
+
+    if (!isDeleting && charIndex === current.length) {
+      isDeleting = true;
+      typingSpeed = 1800;
+    } else if (isDeleting && charIndex === 0) {
+      isDeleting = false;
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+      typingSpeed = 400;
+    }
+
+    setTimeout(type, typingSpeed);
+  }
+
+  type();
+})();
+
+/* ==================== SCROLL REVEAL ==================== */
+(function () {
+  const elements = document.querySelectorAll(".fade-up");
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+
+  elements.forEach((el) => observer.observe(el));
+})();
+
+/* ==================== ANIMATED COUNTERS ==================== */
+(function () {
+  const counters = document.querySelectorAll(".stat-number");
+  let animated = false;
+
+  function animateCounters() {
+    if (animated) return;
+    animated = true;
+
+    counters.forEach((counter) => {
+      const target = parseFloat(counter.getAttribute("data-target"));
+      const isDecimal = target % 1 !== 0;
+      const duration = 2000;
+      const start = performance.now();
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = target * eased;
+
+        if (isDecimal) {
+          counter.textContent = current.toFixed(1);
+        } else {
+          counter.textContent = Math.floor(current);
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          counter.textContent = isDecimal ? target.toFixed(1) : target;
+        }
+      }
+
+      requestAnimationFrame(update);
+    });
+  }
+
+  const statsSection = document.getElementById("stats");
+  if (!statsSection) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        animateCounters();
+        observer.disconnect();
+      }
+    },
+    { threshold: 0.3 }
+  );
+
+  observer.observe(statsSection);
+})();
+
+/* ==================== AI DEMO CHAT ANIMATION ==================== */
+(function () {
+  const container = document.getElementById("demo-messages");
+  if (!container) return;
+
+  const conversation = [
+    { type: "user", text: "Hello AI" },
+    { type: "ai", text: "Hello! 👋<br>How can I help you today?" },
+    { type: "user", text: "Summarize the Above Chats." },
+    {
+      type: "ai",
+      text: "Here are summaries of our previous chats for quick reference."
+    }
+  ];
+
+  let index = 0;
+
+  function showTyping() {
+    const dots = document.createElement("div");
+    dots.className = "typing-dots";
+    dots.innerHTML = "<span></span><span></span><span></span>";
+    container.appendChild(dots);
+    container.scrollTop = container.scrollHeight;
+    return dots;
+  }
+
+  function addMessage(msg) {
+    const div = document.createElement("div");
+    div.className = `msg msg-${msg.type}`;
+    div.innerHTML = msg.text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function playNext() {
+    if (index >= conversation.length) {
+      setTimeout(() => {
+        container.innerHTML = "";
+        index = 0;
+        setTimeout(playNext, 800);
+      }, 4000);
+      return;
+    }
+
+    const msg = conversation[index];
+
+    if (msg.type === "ai") {
+      const dots = showTyping();
+      setTimeout(() => {
+        dots.remove();
+        addMessage(msg);
+        index++;
+        setTimeout(playNext, 1200);
+      }, 1400);
+    } else {
+      addMessage(msg);
+      index++;
+      setTimeout(playNext, 900);
+    }
+  }
+
+  const demoSection = document.getElementById("ai-demo");
+  let started = false;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !started) {
+        started = true;
+        setTimeout(playNext, 600);
+        observer.disconnect();
+      }
+    },
+    { threshold: 0.3 }
+  );
+
+  if (demoSection) observer.observe(demoSection);
+})();
+
+/* ==================== SMOOTH SCROLL FOR ANCHOR LINKS ==================== */
+(function () {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      const targetId = this.getAttribute("href");
+      if (targetId === "#") return;
+
+      const target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+})();
+    </script>
+{% endblock %}
+
+
+

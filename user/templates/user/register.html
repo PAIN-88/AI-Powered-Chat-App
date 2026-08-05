@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'user/register.css' %}">
+    
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-stripe"></div>
+
+            <h1 class="auth-title">Create your account</h1>
+            <p class="auth-subtitle">Join in a few seconds</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert--{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert--error">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="field-error">
+                                {% for error in field.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn-primary">Register</button>
+            </form>
+
+            <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+    </div>
+{% endblock %}

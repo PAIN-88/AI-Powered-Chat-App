@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}">
+
+<div class="chat-wrapper">
+
+    <div class="chat-card">
+
+        <div class="chat-header">
+
+            <div class="user-info">
+
+                <div class="avatar">
+                    {{ other_user.username|first|upper }}
+                </div>
+
+                <div>
+                    <h3>{{ other_user.username }}</h3>
+                    <span>Online</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div id="chat-log" class="chat-log">
+
+            {% for message in messages %}
+
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+
+                <div class="bubble">
+                    {{ message.content }}
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="chat-input-area">
+
+            <input
+                id="chat-message-input"
+                type="text"
+                placeholder="Type a message..."
+            >
+
+            <button id="chat-message-submit">
+                ➜
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{{ conversation.id|json_script:"conversation-id" }}
+{{ request.user.username|json_script:"current-username" }}
+
+<script>
+
+const conversationId = JSON.parse(document.getElementById('conversation-id').textContent);
+const currentUsername = JSON.parse(document.getElementById('current-username').textContent);
+
+const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/chat/' + conversationId + '/'
+);
+
+const chatLog=document.getElementById("chat-log");
+
+chatSocket.onmessage=function(e){
+
+    const data=JSON.parse(e.data);
+
+    const msg=document.createElement("div");
+
+    msg.classList.add("message");
+
+    if(data.sender===currentUsername){
+        msg.classList.add("sent");
+    }
+    else{
+        msg.classList.add("received");
+    }
+
+    msg.innerHTML=`
+        <div class="bubble">
+            ${data.message}
+        </div>
+    `;
+
+    chatLog.appendChild(msg);
+
+    chatLog.scrollTop=chatLog.scrollHeight;
+}
+
+document.getElementById("chat-message-submit").onclick=function(){
+
+    const input=document.getElementById("chat-message-input");
+
+    if(input.value.trim()=="") return;
+
+    chatSocket.send(JSON.stringify({
+        message:input.value
+    }));
+
+    input.value="";
+}
+
+document.getElementById("chat-message-input").addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+        document.getElementById("chat-message-submit").click();
+    }
+
+});
+
+chatLog.scrollTop=chatLog.scrollHeight;
+
+</script>
+
+{% endblock %}

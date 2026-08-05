@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'chat/inbox.css' %}">
+
+<div class="inbox-wrapper">
+
+    <div class="inbox-header">
+        <div>
+            <h2>Your Chats</h2>
+            <p>{{ conversation_data|length }} conversation{{ conversation_data|length|pluralize }}</p>
+        </div>
+
+        <a href="{% url 'user_list' %}" class="new-chat-btn">
+            + Start New Chat
+        </a>
+    </div>
+
+    <div class="chat-card">
+
+        {% for data in conversation_data %}
+        <div class="chat-row">
+
+            <a href="{% url 'chat_room' data.conversation.id %}" class="chat-link">
+
+                <div class="avatar">
+                    {{ data.other_user.username|first|upper }}
+                </div>
+
+                <div class="chat-details">
+                    <div class="username">
+                        {{ data.other_user.username }}
+                    </div>
+
+                    <div class="last-message">
+                        {% if data.last_message %}
+                            {{ data.last_message.content|truncatechars:40 }}
+                        {% else %}
+                            Start your conversation...
+                        {% endif %}
+                    </div>
+                </div>
+
+            </a>
+
+            <div class="chat-actions">
+
+                {% if data.last_message %}
+                <span class="time">
+                    {{ data.last_message.timestamp|timesince }} ago
+                </span>
+                {% endif %}
+
+                <form method="POST"
+                      action="{% url 'delete_chat' data.conversation.id %}">
+                    {% csrf_token %}
+                    <button class="delete-btn">
+                        🗑
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No conversations yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
