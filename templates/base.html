@@ -57,12 +57,17 @@
     {% endif %}
 </li>
 
-                    <li class="navbar__item">
-                        <a href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'login' %}{% endif %}">
-                            <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="PAIN logo">
-                        </a>
-                    </li>
-
+                <li class="navbar__item">
+    {% if user.is_authenticated %}
+        <a href="{% url 'ai_chat_page' %}">
+            <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="AI Assistant">
+        </a>
+    {% else %}
+        <a href="{% url 'login' %}">
+            <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="AI Assistant">
+        </a>
+    {% endif %}
+</li>
                 </ul>
             </nav>
         </div>

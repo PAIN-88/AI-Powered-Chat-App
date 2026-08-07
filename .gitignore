@@ -1,24 +1,13 @@
-# Virtual environment
 myenv/
 venv/
 env/
-
-# Python
 __pycache__/
 *.pyc
-
-# Django
 db.sqlite3
 *.log
 media/
-
-# Environment variables / secrets
 .env
-
-# IDE
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db

@@ -3,10 +3,10 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}">
+<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=6">
 
 <div class="chat-wrapper">
-
+  
     <div class="chat-card">
 
         <div class="chat-header">
@@ -23,6 +23,10 @@
                 </div>
 
             </div>
+
+    <a href="{% url 'summary_page' conversation.id %}" class="ai-summary-icon" title="Summarize Chat">
+        <img src="{% static 'images/ai-logo.png' %}" alt="AI Summary" class="ai-icon-img">
+    </a>
 
         </div>
 
@@ -125,6 +129,21 @@ document.getElementById("chat-message-input").addEventListener("keypress",functi
 
 chatLog.scrollTop=chatLog.scrollHeight;
 
+
+
+document.querySelector('#summarize-btn').onclick = function() {
+    const date = document.querySelector('#summarize-date').value;
+    if (!date) {
+        alert('Please select a date');
+        return;
+    }
+
+    fetch(`/ai/summarize/${conversationId}/?date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('#summary-result').innerText = data.summary || data.error;
+        });
+};
 </script>
 
 {% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ai_app/summary.css' %}?v=1">
+<div class="summary-page">
+    <h2>Summarize Chat</h2>
+    <input type="date" id="summarize-date">
+    <button id="summarize-btn">Generate Summary</button>
+    <div id="summary-result"></div>
+</div>
+
+<script>
+    document.querySelector('#summarize-btn').onclick = function() {
+        const date = document.querySelector('#summarize-date').value;
+        if (!date) { alert('Please select a date'); return; }
+
+        document.querySelector('#summary-result').innerText = 'Generating...';
+
+        fetch(`/ai/summarize/{{ conversation.id }}/?date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#summary-result').innerText = data.summary || data.error;
+            });
+    };
+</script>
+{% endblock %}
