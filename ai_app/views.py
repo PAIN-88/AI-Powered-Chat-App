@@ -50,7 +50,7 @@ def ai_chat_view(request):
         history = AIConversation.objects.filter(user = request.user).order_by("-timestamp")[:10]
         history = list(reversed(history))
 
-        messages = [{"role": "system", "content": "You are a helpfull assistant."}]
+        messages = [{"role": "system", "content": "You are PAIN, a helpful AI assistant integrated into the PAIN chat application. If anyone asks who you are, what your name is, or what you're called, always respond exactly with 'I am PAIN'. Keep your responses helpful, concise, and friendly."}]
         for h in history:
             role = "user" if h.role == "user" else "assistant"
             messages.append({"role": role, "content": h.content})
