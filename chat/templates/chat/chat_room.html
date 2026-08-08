@@ -74,8 +74,9 @@
 const conversationId = JSON.parse(document.getElementById('conversation-id').textContent);
 const currentUsername = JSON.parse(document.getElementById('current-username').textContent);
 
+const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 const chatSocket = new WebSocket(
-    'ws://' + window.location.host + '/ws/chat/' + conversationId + '/'
+    wsProtocol + window.location.host + '/ws/chat/' + conversationId + '/'
 );
 
 const chatLog=document.getElementById("chat-log");
