@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=1">
 
 <div class="chat-wrapper">
   
@@ -11,7 +11,7 @@
 
         <div class="chat-header">
 
-            <div class="user-info">
+            <div class="user-info"  data-other-username="{{ other_user.username }}">
 
                 <div class="avatar">
                     {{ other_user.username|first|upper }}
@@ -19,7 +19,7 @@
 
                 <div>
                     <h3>{{ other_user.username }}</h3>
-                    <span>Online</span>
+                    <span id="status-text" class="status-offline">Offline</span>
                 </div>
 
             </div>
@@ -82,9 +82,18 @@ const chatSocket = new WebSocket(
 const chatLog=document.getElementById("chat-log");
 
 chatSocket.onmessage=function(e){
-
     const data=JSON.parse(e.data);
+if (data.type === 'status') {
+    const userInfo = document.querySelector('.user-info');
+    const otherUsername = userInfo.dataset.otherUsername;
 
+    if (data.username === otherUsername) {
+        const statusText = userInfo.querySelector('span');
+        statusText.innerText = data.status === 'online' ? 'Online' : 'Offline';
+        statusText.style.color = data.status === 'online' ? '#34D399' : '#F87171';
+    }
+    return;
+}
     const msg=document.createElement("div");
 
     msg.classList.add("message");
