@@ -45,6 +45,8 @@
 
         </div>
 
+        <div id="typing-indicator" class="typing-indicator" style="display: none;"></div>
+
 
         <div class="chat-input-area">
             <input id="chat-message-input" type="text" placeholder="Type a message...">
@@ -77,6 +79,16 @@ chatSocket.onmessage = function(e) {
         chatSocket.send(JSON.stringify({ type: 'pong' }));
         return;
     }
+   
+    if (data.type === 'typing') {
+    const typingDiv = document.getElementById('typing-indicator');
+    const otherUsername = document.querySelector('.user-info').dataset.otherUsername;
+    if (data.username === otherUsername) {
+        typingDiv.style.display = data.is_typing ? 'block' : 'none';
+        typingDiv.innerText = data.is_typing ? `${data.username} is typing...` : '';
+    }
+    return;
+}
 
     if (data.type === 'status') {
         const userInfo = document.querySelector('.user-info');
@@ -131,6 +143,19 @@ document.getElementById("chat-message-input").addEventListener("keypress", funct
 
 chatLog.scrollTop = chatLog.scrollHeight;
 
+
+
+
+let typingTimeout;
+
+document.getElementById("chat-message-input").addEventListener("input", function() {
+    chatSocket.send(JSON.stringify({ type: "typing", is_typing: true }));
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(function() {
+        chatSocket.send(JSON.stringify({ type: "typing", is_typing: false }));
+    }, 1500);
+});
 </script>
 
 {% endblock %}

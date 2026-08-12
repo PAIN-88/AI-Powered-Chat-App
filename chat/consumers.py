@@ -81,6 +81,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.last_pong = asyncio.get_event_loop().time()
             return
 
+        if text_data_json.get("type") == "typing":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type":"typing_indicator","username": self.user.username, "is_typing": text_data_json.get("is_typing")}
+            )
+            return
+
         message = text_data_json["message"]
         await self.save_message(message)
 
@@ -115,3 +122,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "username": event["username"],
             "status": event["status"]
         }))
+
+    async def typing_indicator(self, event):
+        if event["username"] != self.user.username:
+            await self.send(text_data=json.dumps({
+                "type":"typing",
+                "username": event["username"],
+                "is_typing": event["is_typing"]
+            }))
