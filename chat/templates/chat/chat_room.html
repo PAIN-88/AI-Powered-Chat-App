@@ -6,12 +6,12 @@
 <link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=1">
 
 <div class="chat-wrapper">
-  
+
     <div class="chat-card">
 
         <div class="chat-header">
 
-            <div class="user-info"  data-other-username="{{ other_user.username }}">
+            <div class="user-info" data-other-username="{{ other_user.username }}">
 
                 <div class="avatar">
                     {{ other_user.username|first|upper }}
@@ -24,9 +24,9 @@
 
             </div>
 
-    <a href="{% url 'summary_page' conversation.id %}" class="ai-summary-icon" title="Summarize Chat">
-        <img src="{% static 'images/ai-logo.png' %}" alt="AI Summary" class="ai-icon-img">
-    </a>
+            <a href="{% url 'summary_page' conversation.id %}" class="ai-summary-icon" title="Summarize Chat">
+                <img src="{% static 'images/ai-logo.png' %}" alt="AI Summary" class="ai-icon-img">
+            </a>
 
         </div>
 
@@ -36,11 +36,9 @@
             {% for message in messages %}
 
             <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-
                 <div class="bubble">
                     {{ message.content }}
                 </div>
-
             </div>
 
             {% endfor %}
@@ -49,17 +47,8 @@
 
 
         <div class="chat-input-area">
-
-            <input
-                id="chat-message-input"
-                type="text"
-                placeholder="Type a message..."
-            >
-
-            <button id="chat-message-submit">
-                ➜
-            </button>
-
+            <input id="chat-message-input" type="text" placeholder="Type a message...">
+            <button id="chat-message-submit">➜</button>
         </div>
 
     </div>
@@ -79,81 +68,69 @@ const chatSocket = new WebSocket(
     wsProtocol + window.location.host + '/ws/chat/' + conversationId + '/'
 );
 
-const chatLog=document.getElementById("chat-log");
+const chatLog = document.getElementById("chat-log");
 
-chatSocket.onmessage=function(e){
-    const data=JSON.parse(e.data);
-if (data.type === 'status') {
-    const userInfo = document.querySelector('.user-info');
-    const otherUsername = userInfo.dataset.otherUsername;
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
 
-    if (data.username === otherUsername) {
-        const statusText = userInfo.querySelector('span');
-        statusText.innerText = data.status === 'online' ? 'Online' : 'Offline';
-        statusText.style.color = data.status === 'online' ? '#34D399' : '#F87171';
+    if (data.type === 'ping') {
+        chatSocket.send(JSON.stringify({ type: 'pong' }));
+        return;
     }
-    return;
-}
-    const msg=document.createElement("div");
 
+    if (data.type === 'status') {
+        const userInfo = document.querySelector('.user-info');
+        const otherUsername = userInfo.dataset.otherUsername;
+        if (data.username === otherUsername) {
+            const statusText = userInfo.querySelector('span');
+            statusText.innerText = data.status === 'online' ? 'Online' : 'Offline';
+            statusText.style.color = data.status === 'online' ? '#34D399' : '#F87171';
+        }
+        return;
+    }
+
+    const msg = document.createElement("div");
     msg.classList.add("message");
 
-    if(data.sender===currentUsername){
+    if (data.sender === currentUsername) {
         msg.classList.add("sent");
-    }
-    else{
+    } else {
         msg.classList.add("received");
     }
 
-    msg.innerHTML=`
+    msg.innerHTML = `
         <div class="bubble">
             ${data.message}
         </div>
     `;
 
     chatLog.appendChild(msg);
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
 
-    chatLog.scrollTop=chatLog.scrollHeight;
-}
-
-document.getElementById("chat-message-submit").onclick=function(){
-
-    const input=document.getElementById("chat-message-input");
-
-    if(input.value.trim()=="") return;
-
-    chatSocket.send(JSON.stringify({
-        message:input.value
-    }));
-
-    input.value="";
-}
-
-document.getElementById("chat-message-input").addEventListener("keypress",function(e){
-
-    if(e.key==="Enter"){
-        document.getElementById("chat-message-submit").click();
-    }
-
+window.addEventListener('beforeunload', function() {
+    chatSocket.close();
 });
 
-chatLog.scrollTop=chatLog.scrollHeight;
+document.getElementById("chat-message-submit").onclick = function() {
+    const input = document.getElementById("chat-message-input");
+    if (input.value.trim() == "") return;
 
+    chatSocket.send(JSON.stringify({
+        message: input.value
+    }));
 
-
-document.querySelector('#summarize-btn').onclick = function() {
-    const date = document.querySelector('#summarize-date').value;
-    if (!date) {
-        alert('Please select a date');
-        return;
-    }
-
-    fetch(`/ai/summarize/${conversationId}/?date=${date}`)
-        .then(response => response.json())
-        .then(data => {
-            document.querySelector('#summary-result').innerText = data.summary || data.error;
-        });
+    input.value = "";
 };
+
+document.getElementById("chat-message-input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        document.getElementById("chat-message-submit").click();
+    }
+});
+
+chatLog.scrollTop = chatLog.scrollHeight;
+
 </script>
 
 {% endblock %}
