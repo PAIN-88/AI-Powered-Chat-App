@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'chat/user_list.css' %}">
+<link rel="stylesheet" href="{% static 'chat/user_list.css' %}?v=2">
 
 <div class="user-wrapper">
 
@@ -29,8 +29,12 @@
             <div class="user-info">
 
                 <div class="avatar">
-                    {{ u.username|first|upper }}
-                </div>
+    {% if u.profile.avatar %}
+        <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}" class="avatar-img">
+    {% else %}
+        {{ u.username|first|upper }}
+    {% endif %}
+</div>
 
                 <div>
 

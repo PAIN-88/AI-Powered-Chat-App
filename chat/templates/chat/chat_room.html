@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=2">
 
 <div class="chat-wrapper">
 
@@ -14,8 +14,12 @@
             <div class="user-info" data-other-username="{{ other_user.username }}">
 
                 <div class="avatar">
-                    {{ other_user.username|first|upper }}
-                </div>
+    {% if other_user.profile.avatar %}
+        <img src="{{ other_user.profile.avatar.url }}" alt="{{ other_user.username }}" class="avatar-img">
+    {% else %}
+        {{ other_user.username|first|upper }}
+    {% endif %}
+</div>
 
                 <div>
                     <h3>{{ other_user.username }}</h3>
