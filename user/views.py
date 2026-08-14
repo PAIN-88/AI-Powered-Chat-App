@@ -29,11 +29,8 @@ def login_view(request):
         form = LoginForm(request.POST)
 
         if form.is_valid():
-            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-
-            user_obj = User.objects.filter(email=email).order_by('id').first()
-            username = user_obj.username if user_obj else None
 
             user = authenticate(request, username=username, password=password)
 
@@ -46,7 +43,6 @@ def login_view(request):
         form = LoginForm()
 
     return render(request, 'user/login.html', {'form': form})
-
 
 def logout_view(request):
     logout(request)

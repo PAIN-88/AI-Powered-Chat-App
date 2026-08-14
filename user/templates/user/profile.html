@@ -3,7 +3,7 @@
 
 {% block title %}Register{% endblock %}
 {% block content %}
-    <link rel="stylesheet" href="{% static 'user/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'user/profile.css' %}?v=6">
 
 
     <div class="auth-page">
@@ -21,7 +21,9 @@
             </div>
 
             <h1 class="auth-title profile-name">{{ profile.user.username }}</h1>
-            <p class="auth-subtitle">{{ profile.user.email }}</p>
+            {% if profile.user.email %}
+                <p class="auth-subtitle">{{ profile.user.email }}</p>
+            {% endif %}
 
             <div class="profile-info">
                 <span class="profile-label">Bio</span>

@@ -3,27 +3,30 @@ from django.contrib.auth.models import User
 from .models import *
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
-    
+
     class Meta:
         model = User
-        fields = ['username','email','password']
+        fields = ['username', 'password']
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if ' ' in username:
+            raise forms.ValidationError("Username must not contain spaces.")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
         try:
             validate_password(password)
-        except  ValidationError as e:
+        except ValidationError as e:
             raise forms.ValidationError(e.messages)
         return password
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already registered.")
-        return email
 
     def clean(self):
         cleaned_data = super().clean()
@@ -33,11 +36,13 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match")
         return cleaned_data
 
+
 class LoginForm(forms.Form):
-    email = forms.EmailField()
+    username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['bio','avatar']
+        fields = ['bio', 'avatar']
