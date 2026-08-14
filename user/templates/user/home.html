@@ -16,7 +16,7 @@
       </div>
       {% if not user.is_authenticated %}
       <div class="hero-buttons">
-        <a href="#cta" class="btn btn-primary">Start Chatting</a>
+        <a href="{% url 'login' %}" class="btn btn-primary">Start Chatting</a>
         <a href="#features" class="btn btn-secondary">Learn More</a>
       </div>
       {% endif %}
@@ -225,7 +225,7 @@
     <h2 class="cta-title">Ready to Start Smarter Conversations?</h2>
     <p class="cta-subtitle">Connect with friends and experience AI-powered real-time communication.</p>
     {% if not user.is_authenticated %}
-    <a href="#" class="btn btn-primary btn-large">Start Chatting</a>
+    <a href="{% url 'login' %}" class="btn btn-primary btn-large">Start Chatting</a>
     {% endif %}
   </div>
 </section>
