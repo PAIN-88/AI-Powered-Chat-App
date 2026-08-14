@@ -31,24 +31,21 @@ def login_view(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            
-            try:
-                user_obj = User.objects.get(email=email)
-                username = user_obj.username
-            except  User.DoesNotExist:
-                username = None
-        
+
+            user_obj = User.objects.filter(email=email).order_by('id').first()
+            username = user_obj.username if user_obj else None
+
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                login(request,user)
+                login(request, user)
                 return redirect('home')
             else:
-                form.add_error(None,"Invalid Credentials")
+                form.add_error(None, "Invalid Credentials")
     else:
         form = LoginForm()
-    
-    return render(request,'user/login.html', {'form':form})
+
+    return render(request, 'user/login.html', {'form': form})
 
 
 def logout_view(request):
