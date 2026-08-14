@@ -11,12 +11,18 @@
 
             <h1 class="auth-title">Create your account</h1>
             <p class="auth-subtitle">Join in a few seconds</p>
-
+       
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert--{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
+
+            {% if email_sent %}
+    <div class="alert alert--success">
+        Verification email sent to <strong>{{ sent_email_address }}</strong>. Please check your inbox.
+    </div>
+{% endif %}
 
             {% if form.non_field_errors %}
                 <div class="alert alert--error">
