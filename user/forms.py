@@ -24,6 +24,11 @@ class RegisterForm(forms.ModelForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("This email is already registered.")
         return email
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+             raise forms.ValidationError("This username is already taken.")
+        return username
 
     def clean(self):
         cleaned_data = super().clean()
