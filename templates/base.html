@@ -9,7 +9,8 @@
     <meta name="theme-color" content="#4F8CFF">
     <title>PAIN</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'user/base.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'user/base.css' %}?v=4">
+
 </head>
 
 <body>
@@ -18,58 +19,77 @@
         <div class="navbar__container">
             <a href="#" class="navbar__brand">PAIN</a>
 
-
-            <button class="navbar__toggle" id="navbarToggle" aria-label="Toggle navigation" aria-controls="navbarMenu"
-                aria-expanded="false">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-
-            <nav id="navbarMenu" class="navbar__menu" role="navigation" aria-labelledby="navbarToggle">
-
+            <nav id="navbarMenu" class="navbar__menu" role="navigation">
                 <ul class="navbar__list">
 
                     <li class="navbar__item">
                         {% if request.resolver_match.url_name == 'home' %}
-                        {% if user.is_authenticated %}
-                        <a href="{% url 'profile' %}" class="navbar__link">Profile</a>
+                            <a href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}{% endif %}"
+                               class="navbar__link is-active">
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+                                <span class="navbar__label">Home</span>
+                            </a>
                         {% else %}
-                        <a href="{% url 'login' %}" class="navbar__link">Profile</a>
-                        {% endif %}
-                        {% else %}
-                        <a href="{% url 'home' %}" class="navbar__link">Home</a>
+                            <a href="{% url 'home' %}" class="navbar__link">
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+                                <span class="navbar__label">Home</span>
+                            </a>
                         {% endif %}
                     </li>
+
                     {% if user.is_authenticated %}
-                    {% if request.resolver_match.url_name != 'user_list' %}
-                    <li class="navbar__item"><a href="{% url 'inbox' %}" class="navbar__link">Chats</a></li>
+                        {% if request.resolver_match.url_name != 'user_list' %}
+                        <li class="navbar__item">
+                            <a href="{% url 'inbox' %}"
+                               class="navbar__link{% if request.resolver_match.url_name == 'inbox' %} is-active{% endif %}">
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.4-4 8-9 8-1.1 0-2.15-.14-3.12-.4L3 21l1.5-4.24C3.55 15.4 3 13.75 3 12c0-4.4 4-8 9-8s9 3.6 9 8Z"/></svg>
+                                <span class="navbar__label">Messages</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if request.resolver_match.url_name != 'inbox' %}
+                        <li class="navbar__item">
+                            <a href="{% url 'user_list' %}"
+                               class="navbar__link{% if request.resolver_match.url_name == 'user_list' %} is-active{% endif %}">
+                                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path stroke-linecap="round" d="M12 8v8M8 12h8"/></svg>
+                                <span class="navbar__label">New Chat</span>
+                            </a>
+                        </li>
+                        {% endif %}
                     {% endif %}
-                    {% if request.resolver_match.url_name != 'inbox' %}
-                    <li class="navbar__item"><a href="{% url 'user_list' %}" class="navbar__link">New Chat</a></li>
-                    {% endif %}
-                    {% endif %}
-                    {% comment %} <li class="navbar__item"><a href="#" class="navbar__link">Contact</a></li> {% endcomment %}
+
+                    <li class="navbar__item">
+                        <a href="{% if user.is_authenticated %}{% url 'ai_chat_page' %}{% else %}{% url 'login' %}{% endif %}" class="navbar__link">
+                            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9L19 15Z"/></svg>
+                            <span class="navbar__label">PAIN-AI</span>
+                        </a>
+                    </li>
+
+                    <li class="navbar__item">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'profile' %}" class="navbar__avatar">
+                                {{ user.username|first|upper }}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="navbar__avatar">
+                                <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="AI Assistant">
+                            </a>
+                        {% endif %}
+                    </li>
 
                     <li class="navbar__item navbar__item--cta">
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}" class="navbar__link navbar__link--cta">Logout</a>
-    {% elif request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
-        <a href="{% url 'login' %}" class="navbar__link navbar__link--cta">Login</a>
-    {% endif %}
-</li>
-
-                <li class="navbar__item">
-    {% if user.is_authenticated %}
-        <a href="{% url 'ai_chat_page' %}">
-            <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="AI Assistant">
-        </a>
-    {% else %}
-        <a href="{% url 'login' %}">
-            <img class="img-ai" src="{% static 'images/ai-logo.png' %}" alt="AI Assistant">
-        </a>
-    {% endif %}
-</li>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}" class="navbar__link navbar__link--cta">
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 17l5-5-5-5"/><path stroke-linecap="round" d="M21 12H9"/></svg>
+                                <span class="navbar__label">Logout</span>
+                            </a>
+                        {% elif request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
+                            <a href="{% url 'login' %}" class="navbar__link navbar__link--cta">
+                                <span class="navbar__label">Login</span>
+                            </a>
+                        {% endif %}
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -77,33 +97,15 @@
 
     <main>
         {% block content %}
-
         {% endblock %}
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const navbarToggle = document.getElementById('navbarToggle');
-            const navbarMenu = document.getElementById('navbarMenu');
-
-            if (navbarToggle && navbarMenu) {
-                navbarToggle.addEventListener('click', function () {
-                    navbarToggle.classList.toggle('is-active');
-                    navbarMenu.classList.toggle('is-active');
-                    const isExpanded = navbarToggle.getAttribute('aria-expanded') === 'true';
-                    navbarToggle.setAttribute('aria-expanded', !isExpanded);
-                });
-            }
-        });
-
-        
-    </script>
     <script>
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register("{% static 'sw.js' %}")
             .then(reg => console.log('Service Worker registered'))
             .catch(err => console.log('Service Worker failed', err));
     }
-</script>
+    </script>
 </body>
 </html>

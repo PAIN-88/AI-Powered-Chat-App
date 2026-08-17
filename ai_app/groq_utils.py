@@ -6,7 +6,7 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 def get_ai_reply(messages):
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=messages,
         temperature=0.7,
     )
@@ -19,7 +19,7 @@ def call_groq_summarize(chat_text):
         {"role": "user", "content": chat_text},
     ]
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=messages,
         temperature=0.5,
     )
