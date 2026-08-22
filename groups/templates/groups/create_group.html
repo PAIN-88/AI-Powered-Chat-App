@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'groups/create_group.css' %}?v=2">
+
+<div class="user-wrapper">
+
+    <div class="user-header">
+
+        <div>
+            <h2>Create Group</h2>
+            <p>Name your group and pick members</p>
+        </div>
+
+        <a href="{% url 'group_inbox' %}" class="back-btn">
+            ← Back to Groups
+        </a>
+
+    </div>
+
+    <div class="user-card">
+
+        <form method="post" class="create-group-form">
+            {% csrf_token %}
+
+            {% if error %}
+                <p class="form-error">{{ error }}</p>
+            {% endif %}
+
+            <div class="form-field">
+                <label for="name">Group Name</label>
+                <input type="text" id="name" name="name" placeholder="e.g. Weekend Plans" required>
+            </div>
+
+            <div class="form-field">
+                <label>Add Members</label>
+                <div class="member-checklist">
+                    {% for u in users %}
+                        <label class="member-checklist__row">
+                            <div class="user-info">
+                                <div class="avatar">
+                                    {% if u.profile.avatar %}
+                                        <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}" class="avatar-img">
+                                    {% else %}
+                                        {{ u.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <div class="username">{{ u.username }}</div>
+                            </div>
+                            <input type="checkbox" name="members" value="{{ u.id }}">
+                        </label>
+                    {% empty %}
+                        <div class="empty-users">No other users found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="chat-btn create-group-submit">Create Group</button>
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

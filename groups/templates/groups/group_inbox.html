@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'groups/group_inbox.css' %}?v=1">
+
+<div class="inbox-wrapper">
+
+    <div class="inbox-header">
+        <div>
+            <h2>Your Groups</h2>
+            <p>{{ group_data|length }} group{{ group_data|length|pluralize }}</p>
+        </div>
+
+        <a href="{% url 'create_group' %}" class="new-chat-btn">
+            + Create Group
+        </a>
+    </div>
+
+    <div class="chat-card">
+
+        {% for data in group_data %}
+        <div class="chat-row">
+
+            <a href="{% url 'group_room' data.group.id %}" class="chat-link">
+
+                <div class="avatar">
+                    {{ data.group.name|first|upper }}
+                </div>
+
+                <div class="chat-details">
+                    <div class="username">
+                        {{ data.group.name }}
+                    </div>
+
+                    <div class="last-message">
+                        {% if data.last_message %}
+                            {{ data.last_message.sender.username }}: {{ data.last_message.content|truncatechars:35 }}
+                        {% else %}
+                            No messages yet
+                        {% endif %}
+                    </div>
+                </div>
+
+            </a>
+
+            <div class="chat-actions">
+
+                {% if data.last_message %}
+                <span class="time">
+                    {{ data.last_message.timestamp|timesince }} ago
+                </span>
+                {% endif %}
+
+                {% if data.is_owner %}
+                <form method="POST"
+                      action="{% url 'delete_group' data.group.id %}"
+                      onsubmit="return confirm('Delete this group?');">
+                    {% csrf_token %}
+                    <button class="delete-btn">
+                        🗑
+                    </button>
+                </form>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            You are not part of any group yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

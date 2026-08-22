@@ -203,6 +203,8 @@ INSTALLED_APPS = [
     'user',
     'chat',
     'ai_app',
+    'groups',
+    
 ]
 
 MIDDLEWARE = [

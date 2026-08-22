@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'chat/chat_room.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'groups/group_room.css' %}?v=1">
+
+<div class="chat-wrapper">
+
+    <div class="chat-card">
+
+        <div class="chat-header">
+
+            <div class="user-info">
+
+                <div class="avatar">
+                    {{ group.name|first|upper }}
+                </div>
+
+                <div>
+                    <h3>{{ group.name }}</h3>
+                    <span id="status-text" class="status-offline">{{ group.members.count }} member{{ group.members.count|pluralize }}</span>
+                </div>
+
+            </div>
+
+            <div class="chat-header-actions">
+                <a href="{% url 'group_summary_page' group.id %}" class="ai-summary-icon" title="Summarize Group Chat">
+                    <img src="{% static 'images/ai-logo.png' %}" alt="AI Summary" class="ai-icon-img">
+                </a>
+
+                <button type="button" id="toggleMembersBtn" class="members-toggle-btn" title="Members">
+                    👥
+                </button>
+            </div>
+
+        </div>
+
+        <div id="member-panel" class="member-panel">
+            <div class="member-panel__list">
+                {% for m in group.members.all %}
+                    <div class="member-row" data-username="{{ m.username }}">
+                        <div class="user-info">
+                            <div class="avatar avatar--sm">
+                                {% if m.profile.avatar %}
+                                    <img src="{{ m.profile.avatar.url }}" alt="{{ m.username }}" class="avatar-img">
+                                {% else %}
+                                    {{ m.username|first|upper }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="username">{{ m.username }}{% if m.id == group.owner_id %} <span class="owner-tag">(owner)</span>{% endif %}</div>
+                                <span class="member-status status-offline" id="member-status-{{ m.username }}">Offline</span>
+                            </div>
+                        </div>
+
+                        {% if is_owner and m.id != group.owner_id %}
+                            <form method="post" action="{% url 'remove_group_member' group.id m.id %}" onsubmit="return confirm('Remove {{ m.username }} from group?');">
+                                {% csrf_token %}
+                                <button type="submit" class="member-remove-btn">Remove</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{% url 'add_group_member' group.id %}" class="member-add-form">
+                {% csrf_token %}
+                <select name="user_id" required>
+                    <option value="" disabled selected>Add a member...</option>
+                    {% for u in non_members %}
+                        <option value="{{ u.id }}">{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="chat-btn">Add</button>
+            </form>
+
+            {% if is_owner %}
+                <form method="post" action="{% url 'delete_group' group.id %}" onsubmit="return confirm('Delete this group? This cannot be undone.');" class="delete-group-form">
+                    {% csrf_token %}
+                    <button type="submit" class="delete-group-btn">Delete Group</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <div id="chat-log" class="chat-log">
+
+            {% for message in messages %}
+
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <div class="bubble">
+                    {% if message.sender != request.user %}
+                        <div class="bubble-sender">{{ message.sender.username }}</div>
+                    {% endif %}
+                    {{ message.content }}
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div id="typing-indicator" class="typing-indicator" style="display: none;"></div>
+
+        <div class="chat-input-area">
+            <input id="chat-message-input" type="text" placeholder="Type a message...">
+            <button id="chat-message-submit">➜</button>
+        </div>
+
+    </div>
+
+</div>
+
+{{ group.id|json_script:"group-id" }}
+{{ request.user.username|json_script:"current-username" }}
+
+<script>
+
+const groupId = JSON.parse(document.getElementById('group-id').textContent);
+const currentUsername = JSON.parse(document.getElementById('current-username').textContent);
+
+const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+const chatSocket = new WebSocket(
+    wsProtocol + window.location.host + '/ws/group/' + groupId + '/'
+);
+
+const chatLog = document.getElementById("chat-log");
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'ping') {
+        chatSocket.send(JSON.stringify({ type: 'pong' }));
+        return;
+    }
+
+    if (data.type === 'typing') {
+        const typingDiv = document.getElementById('typing-indicator');
+        if (data.username !== currentUsername) {
+            typingDiv.style.display = data.is_typing ? 'block' : 'none';
+            typingDiv.innerText = data.is_typing ? `${data.username} is typing...` : '';
+        }
+        return;
+    }
+
+    if (data.type === 'status') {
+        const statusEl = document.getElementById('member-status-' + data.username);
+        if (statusEl) {
+            statusEl.innerText = data.status === 'online' ? 'Online' : 'Offline';
+            statusEl.classList.toggle('status-online', data.status === 'online');
+            statusEl.classList.toggle('status-offline', data.status !== 'online');
+        }
+        return;
+    }
+
+    const msg = document.createElement("div");
+    msg.classList.add("message");
+
+    if (data.sender === currentUsername) {
+        msg.classList.add("sent");
+    } else {
+        msg.classList.add("received");
+    }
+
+    const senderLine = data.sender !== currentUsername
+        ? `<div class="bubble-sender">${data.sender}</div>`
+        : "";
+
+    msg.innerHTML = `
+        <div class="bubble">
+            ${senderLine}
+            ${data.message}
+        </div>
+    `;
+
+    chatLog.appendChild(msg);
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
+
+window.addEventListener('beforeunload', function() {
+    chatSocket.close();
+});
+
+document.getElementById("chat-message-submit").onclick = function() {
+    const input = document.getElementById("chat-message-input");
+    if (input.value.trim() == "") return;
+
+    chatSocket.send(JSON.stringify({
+        message: input.value
+    }));
+
+    input.value = "";
+};
+
+document.getElementById("chat-message-input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        document.getElementById("chat-message-submit").click();
+    }
+});
+
+chatLog.scrollTop = chatLog.scrollHeight;
+
+let typingTimeout;
+
+document.getElementById("chat-message-input").addEventListener("input", function() {
+    chatSocket.send(JSON.stringify({ type: "typing", is_typing: true }));
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(function() {
+        chatSocket.send(JSON.stringify({ type: "typing", is_typing: false }));
+    }, 1500);
+});
+
+document.getElementById("toggleMembersBtn").addEventListener("click", function() {
+    document.getElementById("member-panel").classList.toggle("is-open");
+});
+</script>
+
+{% endblock %}

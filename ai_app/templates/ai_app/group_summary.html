@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ai_app/ai_chat.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'ai_app/group_summary_chat.css' %}?v=1">
+
+<div class="ai-window">
+    <div class="ai-window-header">
+        <a href="{% url 'group_room' group.id %}" class="summary-back-link">← Back</a>
+        <div class="ai-window-title">Summarize: {{ group.name }}</div>
+        <input type="date" id="summary-date" class="summary-date-input">
+    </div>
+
+    <div id="ai-chat-log" class="ai-window-body">
+        <div class="ai-row ai-row-ai">
+            <div class="ai-bubble bubble-ai">
+                Pick a date above and I'll summarize that day's group chat. You can then ask me follow-up questions about it.
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-window-input">
+        <input type="text" id="ai-message-input" placeholder="Ask about this date's chat...">
+        <button id="ai-send-btn">➜</button>
+    </div>
+</div>
+
+<script>
+    const groupId = {{ group.id }};
+    let chatHistory = [];
+
+    function appendMessage(role, text) {
+        const chatLog = document.querySelector('#ai-chat-log');
+        const row = document.createElement('div');
+        row.className = `ai-row ${role === 'user' ? 'ai-row-user' : 'ai-row-ai'}`;
+        const bubble = document.createElement('div');
+        bubble.className = `ai-bubble ${role === 'user' ? 'bubble-user' : 'bubble-ai'}`;
+        bubble.innerText = text;
+        row.appendChild(bubble);
+        chatLog.appendChild(row);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function sendMessage(message) {
+        const date = document.getElementById('summary-date').value;
+        if (!date) {
+            appendMessage('assistant', 'Please select a date first.');
+            return;
+        }
+
+        appendMessage('user', message);
+
+        fetch("{% url 'group_summary_chat' group.id %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                message: message,
+                date: date,
+                history: chatHistory
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const reply = data.reply || data.error || "Something went wrong.";
+            appendMessage('assistant', reply);
+            chatHistory.push({ role: "user", content: message });
+            chatHistory.push({ role: "assistant", content: reply });
+        })
+        .catch(() => {
+            appendMessage('assistant', 'Something went wrong. Please try again.');
+        });
+    }
+
+    document.querySelector('#ai-send-btn').onclick = function() {
+        const input = document.querySelector('#ai-message-input');
+        const message = input.value.trim();
+        if (!message) return;
+        input.value = '';
+        sendMessage(message);
+    };
+
+    document.querySelector('#ai-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#ai-send-btn').click();
+        }
+    };
+
+    document.getElementById('summary-date').addEventListener('change', function() {
+        chatHistory = [];
+        const date = this.value;
+        if (!date) return;
+        sendMessage(`Summarize the chat for ${date}.`);
+    });
+</script>
+{% endblock %}
