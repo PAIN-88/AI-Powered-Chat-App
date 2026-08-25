@@ -26,6 +26,7 @@ urlpatterns = [
     path('',include('user.urls')),
     path('ai/', include('ai_app.urls')),
     path('groups/', include('groups.urls')),
+    path('notifications/', include('notifications.urls')),   
 ]
 
 if settings.DEBUG:

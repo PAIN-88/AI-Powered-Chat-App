@@ -204,6 +204,7 @@ INSTALLED_APPS = [
     'chat',
     'ai_app',
     'groups',
+    'notifications',
     
 ]
 

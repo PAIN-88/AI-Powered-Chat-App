@@ -39,6 +39,7 @@ body {
     display: flex;
     flex-shrink: 1;
     min-width: 0;
+    width: 100%;
 }
 
 .navbar__list {
@@ -48,6 +49,8 @@ body {
     list-style: none;
     margin: 0;
     padding: 0;
+    width: 100%;
+    justify-content: space-between;
 }
 
 .navbar__item {
@@ -197,6 +200,116 @@ body {
     flex-shrink: 0;
 }
 
+/* Notification bell */
+.navbar__notif-wrap {
+    position: relative;
+    display: flex;
+}
+
+.navbar__bell {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+    color: #2b2b3a;
+    padding: 0;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.navbar__bell:hover {
+    background: #f1f3fb;
+}
+
+.navbar__bell svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.navbar__bell-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #f7477c;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border: 2px solid #ffffff;
+}
+
+.navbar__notif-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(20, 20, 43, 0.12);
+    width: 300px;
+    max-height: 360px;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 6px;
+}
+
+.navbar__notif-menu.is-open {
+    display: block;
+}
+
+.navbar__notif-header {
+    padding: 10px 12px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2b2b3a;
+}
+
+.navbar__notif-item {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #2b2b3a;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.navbar__notif-item:hover {
+    background: #f1f3fb;
+}
+
+.navbar__notif-item small {
+    display: block;
+    color: #8a8a9a;
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.navbar__notif-empty {
+    padding: 16px 12px;
+    text-align: center;
+    color: #8a8a9a;
+    font-size: 13px;
+}
+
 @media (max-width: 640px) {
     .navbar {
         padding: 10px 10px;
@@ -234,5 +347,15 @@ body {
     .navbar__hamburger {
         width: 32px;
         height: 32px;
+    }
+
+    .navbar__bell {
+        width: 32px;
+        height: 32px;
+    }
+
+    .navbar__notif-menu {
+        width: 260px;
+        right: -10px;
     }
 }

@@ -3,8 +3,10 @@ import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Group, GroupMessage
+from notifications.utils import send_notification
 
 ONLINE_USERS = {}
+
 
 class GroupChatConsumer(AsyncWebsocketConsumer):
 
@@ -21,7 +23,8 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         if not is_member:
             await self.close()
             return
-        await self.channel_layer.group_add(self.room_group_name,self.channel_name)
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
         if self.room_group_name not in ONLINE_USERS:
@@ -30,35 +33,32 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_send(
             self.room_group_name,
-            {"type":"user_status",
-             "username": self.user.username,
-             "status":"online"}
+            {"type": "user_status", "username": self.user.username, "status": "online"}
         )
 
         other_members = await self.get_other_members()
         for username in other_members:
             status = "online" if username in ONLINE_USERS.get(self.room_group_name, set()) else "offline"
             await self.send(text_data=json.dumps({
-                "type":"status",
+                "type": "status",
                 "username": username,
                 "status": status
             }))
 
-        self.last_pong  = asyncio.get_event_loop().time()
-        self.heartbeat_task  = asyncio.create_task(self.send_heartbeat())
+        self.last_pong = asyncio.get_event_loop().time()
+        self.heartbeat_task = asyncio.create_task(self.send_heartbeat())
 
     async def send_heartbeat(self):
         try:
             while True:
                 await asyncio.sleep(10)
-                now  = asyncio.get_event_loop().time()
+                now = asyncio.get_event_loop().time()
                 if now - self.last_pong > 20:
                     await self.close()
                     break
-                await self.send(text_data=json.dumps({"type":"ping"}))
+                await self.send(text_data=json.dumps({"type": "ping"}))
         except Exception:
             pass
-
 
     async def disconnect(self, close_code):
         if hasattr(self, "heartbeat_task"):
@@ -70,9 +70,7 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
 
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {"type":"user_status",
-                 "username":self.user.username,
-                 "status":"offline"}
+                {"type": "user_status", "username": self.user.username, "status": "offline"}
             )
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
@@ -80,28 +78,26 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
 
         if text_data_json.get("type") == "pong":
-                self.last_pong  =  asyncio.get_event_loop().time()
-                return
+            self.last_pong = asyncio.get_event_loop().time()
+            return
 
         if text_data_json.get("type") == "typing":
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {"type":"typing_indicator",
-                     "username": self.user.username,
-                     "is_typing": text_data_json.get("is_typing")}
-                )
-                return
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "typing_indicator", "username": self.user.username, "is_typing": text_data_json.get("is_typing")}
+            )
+            return
+
         message = text_data_json["message"]
         await self.save_message(message)
+        await self.notify_other_members(message)
 
         await self.channel_layer.group_send(
-                   self.room_group_name,
-                   {"type": "chat_message",
-                    "message": message,
-                    "sender": self.user.username}
-              )
+            self.room_group_name,
+            {"type": "chat_message", "message": message, "sender": self.user.username}
+        )
 
-    async def chat_message(self,event):
+    async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             "message": event["message"],
             "sender": event["sender"],
@@ -109,43 +105,44 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def is_user_member(self):
-        return Group.objects.filter(
-            id=self.group_id,
-            members = self.user
-        ).exists()
-    
+        return Group.objects.filter(id=self.group_id, members=self.user).exists()
+
     @database_sync_to_async
-    def save_message(self,message):
+    def save_message(self, message):
         group = Group.objects.get(id=self.group_id)
-        GroupMessage.objects.create(group=group,
-                                    sender = self.user,
-                                    content=message)
+        GroupMessage.objects.create(group=group, sender=self.user, content=message)
 
     @database_sync_to_async
     def get_other_members(self):
-        group = Group.objects.get(id = self.group_id)
+        group = Group.objects.get(id=self.group_id)
         return list(group.members.exclude(id=self.user.id).values_list('username', flat=True))
+
+@database_sync_to_async
+def notify_other_members(self, message):
+    group = Group.objects.get(id=self.group_id)
+    active_users = ONLINE_USERS.get(self.room_group_name, set())
+    for member in group.members.exclude(id=self.user.id):
+        if member.username in active_users:
+            continue  # this member has the group room open right now — skip
+        send_notification(
+            recipient=member,
+            notification_type="group_message",
+            text=f"{self.user.username} in {group.name}: {message[:40]}",
+            link=f"/groups/room/{self.group_id}/",
+            sender=self.user,
+        )
 
     async def user_status(self, event):
         await self.send(text_data=json.dumps({
-            "type":"status",
+            "type": "status",
             "username": event["username"],
             "status": event["status"]
         }))
 
-    async def typing_indicator(self,event):
+    async def typing_indicator(self, event):
         if event["username"] != self.user.username:
             await self.send(text_data=json.dumps({
-                "type":"typing",
-                "username":event["username"],
-                "is_typing":event["is_typing"]
+                "type": "typing",
+                "username": event["username"],
+                "is_typing": event["is_typing"]
             }))
-
-    
-        
-            
-
-
-
-
-    

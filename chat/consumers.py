@@ -3,6 +3,7 @@ import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Conversation, Message
+from notifications.utils import send_notification
 
 ONLINE_USERS = {}
 
@@ -90,6 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         message = text_data_json["message"]
         await self.save_message(message)
+        await self.notify_other_participant(message)
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -116,6 +118,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation = Conversation.objects.get(id=self.conversation_id)
         return list(conversation.participants.exclude(id=self.user.id).values_list('username', flat=True))
 
+    @database_sync_to_async
+    def notify_other_participant(self, message):
+        conversation = Conversation.objects.get(id=self.conversation_id)
+        other_user = conversation.participants.exclude(id=self.user.id).first()
+        if other_user:
+            active_users = ONLINE_USERS.get(self.room_group_name, set())
+            if other_user.username in active_users:
+                return
+            send_notification(
+                recipient=other_user,
+                notification_type="message",
+                text=f"{self.user.username}: {message[:40]}",
+                link=f"/chat/room/{self.conversation_id}/",
+                sender=self.user,
+            )
+    
     async def user_status(self, event):
         await self.send(text_data=json.dumps({
             "type": "status",
