@@ -354,8 +354,12 @@ body {
         height: 32px;
     }
 
-    .navbar__notif-menu {
-        width: 260px;
-        right: -10px;
+.navbar__notif-menu {
+        position: fixed;
+        top: 76px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
     }
 }
