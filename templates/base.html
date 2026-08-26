@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#4F8CFF">
     <title>PAIN</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'user/base.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'user/base.css' %}?v=7">
 
 </head>
 
@@ -239,6 +239,42 @@
             }
         });
     })();
+    function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+function subscribeToPush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    navigator.serviceWorker.ready.then(function(registration) {
+        registration.pushManager.getSubscription().then(function(existingSub) {
+            if (existingSub) return;
+
+            Notification.requestPermission().then(function(permission) {
+                if (permission !== 'granted') return;
+
+                registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array('{{ VAPID_PUBLIC_KEY }}'),
+                }).then(function(subscription) {
+                    fetch('/notifications/save-subscription/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify(subscription),
+                    });
+                });
+            });
+        });
+    });
+}
+
+subscribeToPush();
     </script>
     {% endif %}
 </body>

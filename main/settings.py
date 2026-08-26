@@ -229,6 +229,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'notifications.context_processors.vapid_key',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -327,3 +328,6 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='BEgIEF_ce9kePF88XDj-oretdiTQ0Kv0JlYputQdz8Q8z3NB53LIkJIzZWhUg3di4Q1UgTmmExjqEzd8HI2p3gI')
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='fSNn3cWekZ_PhTopAW6j7vzSze6h6xnePOlgkKwvGK8')
+VAPID_ADMIN_EMAIL = config('VAPID_ADMIN_EMAIL', default='st7860519@gmail.com')

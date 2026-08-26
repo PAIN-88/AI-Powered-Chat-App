@@ -117,21 +117,21 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         group = Group.objects.get(id=self.group_id)
         return list(group.members.exclude(id=self.user.id).values_list('username', flat=True))
 
-@database_sync_to_async
-def notify_other_members(self, message):
-    group = Group.objects.get(id=self.group_id)
-    active_users = ONLINE_USERS.get(self.room_group_name, set())
-    for member in group.members.exclude(id=self.user.id):
-        if member.username in active_users:
-            continue  # this member has the group room open right now — skip
-        send_notification(
-            recipient=member,
-            notification_type="group_message",
-            text=f"{self.user.username} in {group.name}: {message[:40]}",
-            link=f"/groups/room/{self.group_id}/",
-            sender=self.user,
-        )
-
+    @database_sync_to_async
+    def notify_other_members(self, message):
+        group = Group.objects.get(id=self.group_id)
+        active_users = ONLINE_USERS.get(self.room_group_name, set())
+        for member in group.members.exclude(id=self.user.id):
+            if member.username in active_users:
+                continue  # this member has the group room open right now — skip
+            send_notification(
+                recipient=member,
+                notification_type="group_message",
+                text=f"{self.user.username} in {group.name}: {message[:40]}",
+                link=f"/groups/room/{self.group_id}/",
+                sender=self.user,
+            )
+    
     async def user_status(self, event):
         await self.send(text_data=json.dumps({
             "type": "status",
