@@ -14,10 +14,11 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    is_unlocked = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["timestamp"]
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:30]}"
-

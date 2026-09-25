@@ -76,42 +76,59 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-
+    
         if text_data_json.get("type") == "pong":
             self.last_pong = asyncio.get_event_loop().time()
             return
-
+    
         if text_data_json.get("type") == "typing":
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {"type": "typing_indicator", "username": self.user.username, "is_typing": text_data_json.get("is_typing")}
             )
             return
-
+    
         message = text_data_json["message"]
-        await self.save_message(message)
+        scheduled_at = text_data_json.get("scheduled_at")  # naya
+    
+        is_scheduled = await self.save_message(message, scheduled_at)
+    
+        if is_scheduled:
+            return
+    
         await self.notify_other_members(message)
-
+    
         await self.channel_layer.group_send(
             self.room_group_name,
             {"type": "chat_message", "message": message, "sender": self.user.username}
         )
 
     async def chat_message(self, event):
-        await self.send(text_data=json.dumps({
-            "message": event["message"],
-            "sender": event["sender"],
-        }))
+       await self.send(text_data=json.dumps({
+           "message": event["message"],
+           "sender": event["sender"],
+           "is_system": event.get("is_system", False),
+       }))
 
     @database_sync_to_async
     def is_user_member(self):
         return Group.objects.filter(id=self.group_id, members=self.user).exists()
 
     @database_sync_to_async
-    def save_message(self, message):
+    def save_message(self, message, scheduled_at=None):
         group = Group.objects.get(id=self.group_id)
+        if scheduled_at:
+            GroupMessage.objects.create(
+                group=group,
+                sender=self.user,
+                content=message,
+                scheduled_at=scheduled_at,
+                is_unlocked=False,
+            )
+            return True
         GroupMessage.objects.create(group=group, sender=self.user, content=message)
-
+        return False
+    
     @database_sync_to_async
     def get_other_members(self):
         group = Group.objects.get(id=self.group_id)

@@ -51,9 +51,12 @@
 
         <div id="typing-indicator" class="typing-indicator" style="display: none;"></div>
 
+        <div id="schedule-confirm-toast" style="display:none;text-align:center;color:#34D399;font-size:13px;padding:6px;"></div>
 
         <div class="chat-input-area">
             <input id="chat-message-input" type="text" placeholder="Type a message...">
+            <input id="schedule-time-input" type="datetime-local" style="display:none;">
+            <button id="schedule-toggle-btn" type="button" title="Schedule for later" style="background:none;border:none;font-size:20px;cursor:pointer;">🕐</button>
             <button id="chat-message-submit">➜</button>
         </div>
 
@@ -128,13 +131,35 @@ window.addEventListener('beforeunload', function() {
     chatSocket.close();
 });
 
+const scheduleToggleBtn = document.getElementById("schedule-toggle-btn");
+const scheduleTimeInput = document.getElementById("schedule-time-input");
+
+scheduleToggleBtn.addEventListener("click", function() {
+    scheduleTimeInput.style.display = scheduleTimeInput.style.display === "none" ? "inline-block" : "none";
+    scheduleToggleBtn.style.opacity = scheduleTimeInput.style.display === "none" ? "1" : "0.5";
+});
+
 document.getElementById("chat-message-submit").onclick = function() {
     const input = document.getElementById("chat-message-input");
     if (input.value.trim() == "") return;
 
-    chatSocket.send(JSON.stringify({
-        message: input.value
-    }));
+    const payload = { message: input.value };
+
+    if (scheduleTimeInput.style.display !== "none" && scheduleTimeInput.value) {
+        payload.scheduled_at = new Date(scheduleTimeInput.value).toISOString();
+
+        const displayTime = new Date(scheduleTimeInput.value).toLocaleString();
+        const toast = document.getElementById("schedule-confirm-toast");
+        toast.innerText = `✅ Scheduled for ${displayTime}`;
+        toast.style.display = "block";
+        setTimeout(() => { toast.style.display = "none"; }, 3000);
+
+        scheduleTimeInput.value = "";
+        scheduleTimeInput.style.display = "none";
+        scheduleToggleBtn.style.opacity = "1";
+    }
+
+    chatSocket.send(JSON.stringify(payload));
 
     input.value = "";
 };

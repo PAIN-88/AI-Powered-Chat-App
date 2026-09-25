@@ -74,30 +74,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {"type": "user_status", "username": self.user.username, "status": "offline"}
             )
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
+    
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-
+    
         if text_data_json.get("type") == "pong":
             self.last_pong = asyncio.get_event_loop().time()
             return
-
+    
         if text_data_json.get("type") == "typing":
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {"type":"typing_indicator","username": self.user.username, "is_typing": text_data_json.get("is_typing")}
             )
             return
-
+    
         message = text_data_json["message"]
-        await self.save_message(message)
+        scheduled_at = text_data_json.get("scheduled_at")  # naya — ISO datetime string ya None
+    
+        is_scheduled = await self.save_message(message, scheduled_at)
+    
+        if is_scheduled:
+            # Locked message hai — abhi kisi ko broadcast nahi karna
+            return
+    
         await self.notify_other_participant(message)
-
+    
         await self.channel_layer.group_send(
             self.room_group_name,
             {"type": "chat_message", "message": message, "sender": self.user.username}
         )
-
+    
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             "message": event["message"],
@@ -109,9 +116,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return Conversation.objects.filter(id=self.conversation_id, participants=self.user).exists()
 
     @database_sync_to_async
-    def save_message(self, message):
+    def save_message(self, message, scheduled_at=None):
         conversation = Conversation.objects.get(id=self.conversation_id)
+        if scheduled_at:
+            Message.objects.create(
+                conversation=conversation,
+                sender=self.user,
+                content=message,
+                scheduled_at=scheduled_at,
+                is_unlocked=False,
+            )
+            return True  # scheduled hai, caller ko batao broadcast skip karo
         Message.objects.create(conversation=conversation, sender=self.user, content=message)
+        return False
 
     @database_sync_to_async
     def get_other_participants(self):

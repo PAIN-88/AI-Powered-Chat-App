@@ -2,9 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Max
+from django.http import JsonResponse
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from .models import Group, GroupMessage
 from notifications.utils import send_notification
-
+from ai_app.groq_utils import get_ai_reply
 
 @login_required
 def create_group_view(request):
@@ -60,7 +63,7 @@ def group_inbox_view(request):
 @login_required
 def group_room_view(request, group_id):
     group = get_object_or_404(Group, id=group_id, members=request.user)
-    messages = group.messages.all()
+    messages = group.messages.filter(is_unlocked=True)
     non_members = User.objects.exclude(id__in=group.members.all())
     return render(request, 'groups/group_room.html', {
         'group': group,
@@ -127,3 +130,44 @@ def delete_group_view(request, group_id):
         )
 
     return redirect('group_inbox')
+
+@login_required
+def generate_icebreaker_view(request, group_id):
+    group = get_object_or_404(Group, id=group_id, members=request.user)
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+
+    messages = [
+        {
+            "role": "system",
+            "content": "You generate short, fun icebreaker questions for group chats. "
+                       "Reply with ONLY one casual, friendly icebreaker question. "
+                       "No preamble, no quotes, no explanation."
+        },
+        {
+            "role": "user",
+            "content": f"Generate a fun icebreaker question for a group chat named '{group.name}'."
+        },
+    ]
+    icebreaker_text = get_ai_reply(messages)
+
+    GroupMessage.objects.create(
+        group=group,
+        sender=request.user,
+        content=icebreaker_text,
+        is_system_message=True,
+    )
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"group_{group.id}",
+        {
+            "type": "chat_message",
+            "message": icebreaker_text,
+            "sender": "✨ Icebreaker",
+            "is_system": True,
+        }
+    )
+
+    return JsonResponse({"status": "ok", "message": icebreaker_text})

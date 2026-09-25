@@ -43,11 +43,11 @@ def inbox_view(request):
    
 @login_required
 def chat_room_view(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id = conversation_id, participants=request.user)
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=request.user)
     other_user = conversation.participants.exclude(id=request.user.id).first()
-    messages = conversation.messages.all()
-    return render(request, 'chat/chat_room.html',{
-         'conversation': conversation,
+    messages = conversation.messages.filter(is_unlocked=True)
+    return render(request, 'chat/chat_room.html', {
+        'conversation': conversation,
         'other_user': other_user,
         'messages': messages,
     })

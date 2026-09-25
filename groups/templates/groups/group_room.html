@@ -30,6 +30,8 @@
                     <img src="{% static 'images/ai-logo.png' %}" alt="AI Summary" class="ai-icon-img">
                 </a>
 
+                <button type="button" id="icebreakerBtn" class="members-toggle-btn" title="Generate Icebreaker">✨</button>
+
                 <button type="button" id="toggleMembersBtn" class="members-toggle-btn" title="Members">
                     👥
                 </button>
@@ -88,14 +90,22 @@
 
             {% for message in messages %}
 
-            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-                <div class="bubble">
-                    {% if message.sender != request.user %}
-                        <div class="bubble-sender">{{ message.sender.username }}</div>
-                    {% endif %}
-                    {{ message.content }}
+                {% if message.is_system_message %}
+                <div class="message" style="text-align:center;">
+                    <div class="bubble" style="background:#f0f0f0;color:#666;font-style:italic;display:inline-block;">
+                        ✨ {{ message.content }}
+                    </div>
                 </div>
-            </div>
+                {% else %}
+                <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                    <div class="bubble">
+                        {% if message.sender != request.user %}
+                            <div class="bubble-sender">{{ message.sender.username }}</div>
+                        {% endif %}
+                        {{ message.content }}
+                    </div>
+                </div>
+                {% endif %}
 
             {% endfor %}
 
@@ -103,8 +113,12 @@
 
         <div id="typing-indicator" class="typing-indicator" style="display: none;"></div>
 
+        <div id="schedule-confirm-toast" style="display:none;text-align:center;color:#34D399;font-size:13px;padding:6px;"></div>
+
         <div class="chat-input-area">
             <input id="chat-message-input" type="text" placeholder="Type a message...">
+            <input id="schedule-time-input" type="datetime-local" style="display:none;">
+            <button id="schedule-toggle-btn" type="button" title="Schedule for later" style="background:none;border:none;font-size:20px;cursor:pointer;">🕐</button>
             <button id="chat-message-submit">➜</button>
         </div>
 
@@ -154,6 +168,16 @@ chatSocket.onmessage = function(e) {
         return;
     }
 
+    if (data.is_system) {
+        const msg = document.createElement("div");
+        msg.classList.add("message");
+        msg.style.textAlign = "center";
+        msg.innerHTML = `<div class="bubble" style="background:#f0f0f0;color:#666;font-style:italic;display:inline-block;">✨ ${data.message}</div>`;
+        chatLog.appendChild(msg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return;
+    }
+
     const msg = document.createElement("div");
     msg.classList.add("message");
 
@@ -182,13 +206,35 @@ window.addEventListener('beforeunload', function() {
     chatSocket.close();
 });
 
+const scheduleToggleBtn = document.getElementById("schedule-toggle-btn");
+const scheduleTimeInput = document.getElementById("schedule-time-input");
+
+scheduleToggleBtn.addEventListener("click", function() {
+    scheduleTimeInput.style.display = scheduleTimeInput.style.display === "none" ? "inline-block" : "none";
+    scheduleToggleBtn.style.opacity = scheduleTimeInput.style.display === "none" ? "1" : "0.5";
+});
+
 document.getElementById("chat-message-submit").onclick = function() {
     const input = document.getElementById("chat-message-input");
     if (input.value.trim() == "") return;
 
-    chatSocket.send(JSON.stringify({
-        message: input.value
-    }));
+    const payload = { message: input.value };
+
+    if (scheduleTimeInput.style.display !== "none" && scheduleTimeInput.value) {
+        payload.scheduled_at = new Date(scheduleTimeInput.value).toISOString();
+
+        const displayTime = new Date(scheduleTimeInput.value).toLocaleString();
+        const toast = document.getElementById("schedule-confirm-toast");
+        toast.innerText = `✅ Scheduled for ${displayTime}`;
+        toast.style.display = "block";
+        setTimeout(() => { toast.style.display = "none"; }, 3000);
+
+        scheduleTimeInput.value = "";
+        scheduleTimeInput.style.display = "none";
+        scheduleToggleBtn.style.opacity = "1";
+    }
+
+    chatSocket.send(JSON.stringify(payload));
 
     input.value = "";
 };
@@ -214,6 +260,18 @@ document.getElementById("chat-message-input").addEventListener("input", function
 
 document.getElementById("toggleMembersBtn").addEventListener("click", function() {
     document.getElementById("member-panel").classList.toggle("is-open");
+});
+
+document.getElementById("icebreakerBtn").addEventListener("click", function() {
+    this.disabled = true;
+    fetch(`/groups/generate-icebreaker/${groupId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}"
+        }
+    }).finally(() => {
+        this.disabled = false;
+    });
 });
 </script>
 

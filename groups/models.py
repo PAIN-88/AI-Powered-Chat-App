@@ -15,6 +15,9 @@ class GroupMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_group_messages")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    is_unlocked = models.BooleanField(default=True)
+    is_system_message = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["timestamp"]

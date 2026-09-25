@@ -8,4 +8,5 @@ urlpatterns = [
     path('add/<int:group_id>/', views.add_group_member_view, name='add_group_member'),
     path('remove/<int:group_id>/<int:user_id>/', views.remove_group_member_view, name='remove_group_member'),
     path('delete/<int:group_id>/', views.delete_group_view, name='delete_group'),
+    path('generate-icebreaker/<int:group_id>/', views.generate_icebreaker_view, name='generate_icebreaker'),
 ]

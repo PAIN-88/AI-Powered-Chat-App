@@ -31,6 +31,59 @@ def summarize_chat(request, conversation_id):
     return JsonResponse({"summary": summary})
 
 @login_required
+def summary_chat_view(request, conversation_id):
+    conversation = Conversation.objects.filter(
+        id=conversation_id,
+        participants=request.user
+    ).first()
+
+    if not conversation:
+        return JsonResponse({"error": "Not Found"})
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"})
+
+    data = json.loads(request.body)
+    date = data.get("date")
+    user_message = data.get("message")
+    client_history = data.get("history", [])
+
+    if not date:
+        return JsonResponse({"error": "Date is required"})
+
+    day_messages = conversation.messages.filter(timestamp__date=date)
+
+    if not day_messages.exists():
+        return JsonResponse({"reply": "No messages are available for this date."})
+
+    char_text = "\n".join([f"{m.sender.username}: {m.content}" for m in day_messages])
+
+    other_user = conversation.participants.exclude(id=request.user.id).first()
+    chat_label = other_user.username if other_user else "this conversation"
+
+    system_prompt = (
+        f"You are an assistant helping summarize and answer questions about a 1-on-1 chat "
+        f"with '{chat_label}' for the date {date}. "
+        f"Only use the following chat log as your source of truth - do not make up information "
+        f"that isn't in it. If asked something the log doesn't cover, say you don't have that information.\n\n"
+        f"Chat log:\n{char_text}"
+    )
+
+    messages = [{"role": "system", "content": system_prompt}]
+
+    for h in client_history:
+        role = h.get("role")
+        content = h.get("content")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+
+    messages.append({"role": "user", "content": user_message})
+
+    reply = get_ai_reply(messages)
+
+    return JsonResponse({"reply": reply})
+
+@login_required
 def summary_page_view(request, conversation_id):
     from chat.models import Conversation
     conversation = Conversation.objects.filter(
