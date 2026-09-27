@@ -31,6 +31,7 @@ body{
     flex-direction:column;
 
     height:82vh;
+    min-height:0;
     overflow:hidden;
 }
 
@@ -40,6 +41,7 @@ body{
 
     padding:20px 28px;
     border-bottom:1px solid #edf1f6;
+    flex-shrink:0;
 }
 
 .user-info{
@@ -88,7 +90,9 @@ body{
 .chat-log{
 
     flex:1;
+    min-height:0;
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 
     padding:25px;
 
@@ -151,12 +155,14 @@ body{
 .chat-input-area{
 
     display:flex;
-    gap:15px;
+    align-items:center;
+    gap:12px;
 
-    padding:20px;
+    padding:16px 20px;
 
     border-top:1px solid #edf1f6;
     background:white;
+    flex-shrink:0;
 }
 
 .chat-input-area input{
@@ -230,7 +236,9 @@ body{
 .chat-card{
 
     height:100vh;
+    height:100dvh;
     border-radius:0;
+    min-height:0;
 }
 
 .bubble{
@@ -240,7 +248,35 @@ body{
 
 .chat-input-area{
 
-    padding:15px;
+    padding:12px 15px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+    gap:10px;
+}
+
+}
+
+@media(max-width:420px){
+
+.chat-input-area input{
+
+    padding:12px 16px;
+    font-size:14px;
+}
+
+.chat-input-area button{
+
+    width:44px;
+    height:44px;
+    font-size:17px;
+    flex-shrink:0;
+}
+
+#schedule-toggle-btn{
+
+    width:auto !important;
+    height:auto !important;
+    padding:0 4px !important;
+    font-size:18px !important;
 }
 
 }
